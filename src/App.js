@@ -150,6 +150,7 @@ export default function App() {
   const [aiSummary, setAiSummary] = useState(null);
   const [aiStatus, setAiStatus] = useState("idle");
   const [aiFooter, setAiFooter] = useState("");
+  const [aiErrorMessage, setAiErrorMessage] = useState("");
   const [nickname, setNickname] = useState(NAMES[0]);
   const [retryToken, setRetryToken] = useState(0);
   const [debugEvents, setDebugEvents] = useState([]);
@@ -228,6 +229,22 @@ export default function App() {
 
   const currentName = NAMES[nameIndex];
   const question = questionSet[step];
+  const getFriendlyErrorMessage = ({ didTimeout, status }) => {
+    if (didTimeout || status === 504) {
+      return "That took longer than usual. Tap retry and we'll try again.";
+    }
+    if (status === 429) {
+      return "Too many requests at once. Take a breath and try again.";
+    }
+    if (status === 401 || status === 403) {
+      return "We couldn't verify the service right now. Try again in a minute.";
+    }
+    if (status && status >= 500) {
+      return "The servers are being moody. Give it a moment and retry.";
+    }
+    return "We hit a small snag. Try again and it'll behave.";
+  };
+
   useEffect(() => {
     if (screen !== "summary") return;
     if (aiSummary) return;
@@ -246,6 +263,7 @@ export default function App() {
 
     const run = async () => {
       setAiStatus("loading");
+      setAiErrorMessage("");
       logEvent("ai_request_start", { nickname, questionCount: questionSet.length });
       timeoutId = setTimeout(() => {
         didTimeout = true;
@@ -265,7 +283,9 @@ export default function App() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(errorText || "Summarization failed");
+          const err = new Error(errorText || "Summarization failed");
+          err.status = response.status;
+          throw err;
         }
 
         const data = await response.json();
@@ -283,6 +303,9 @@ export default function App() {
           return;
         }
         setAiStatus("error");
+        setAiErrorMessage(
+          getFriendlyErrorMessage({ didTimeout, status: err?.status })
+        );
         logEvent("ai_request_error", didTimeout ? "timeout" : err?.message || "unknown");
       } finally {
         clearTimeout(timeoutId);
@@ -323,6 +346,7 @@ export default function App() {
     setAiSummary(null);
     setAiFooter("");
     setAiStatus("idle");
+    setAiErrorMessage("");
     setQuestionSet(pickRandomQuestions());
     setAnswers({});
     setScreen("question");
@@ -363,6 +387,7 @@ export default function App() {
       setAiSummary(null);
       setAiFooter("");
       setAiStatus("idle");
+      setAiErrorMessage("");
       lastRequestKeyRef.current = null;
       setScreen("intro");
     } else {
@@ -377,6 +402,7 @@ export default function App() {
     setAiSummary(null);
     setAiFooter("");
     setAiStatus("idle");
+    setAiErrorMessage("");
     lastRequestKeyRef.current = null;
     setQuestionSet(pickRandomQuestions());
     setScreen("intro");
@@ -387,6 +413,7 @@ export default function App() {
     setAiSummary(null);
     setAiFooter("");
     setAiStatus("idle");
+    setAiErrorMessage("");
     lastRequestKeyRef.current = null;
     setRetryToken((prev) => prev + 1);
     logEvent("ai_retry");
@@ -401,6 +428,7 @@ export default function App() {
     setAiSummary(null);
     setAiFooter("");
     setAiStatus("idle");
+    setAiErrorMessage("");
     setRetryToken((prev) => prev + 1);
     logEvent("debug_test", { answer: answerText.slice(0, 40) });
   };
@@ -456,8 +484,11 @@ export default function App() {
               For <span key={currentName} className="name-swap">{currentName}</span>
             </p>
             <p className="subtitle">
-              Answer a few gentle questions and I will turn your words into a
-              sweet little portrait of you and us.
+              Valentine’s is on 14/02 for kids. Grown‑ups celebrate it on a
+              delay.{" "}
+              <span className="subtitle-aside">
+                (is something people say when they're late @ gift giving)
+              </span>
             </p>
             <div className="cta-row">
               <button className="btn primary" type="button" onClick={handleStart}>
@@ -508,6 +539,11 @@ export default function App() {
             <div className="char-count">
               {(answers[question.id] || "").length}/{MAX_ANSWER_CHARS}
             </div>
+            {!canContinue && (
+              <p className="question-helper">
+                Add a few words so I can keep going.
+              </p>
+            )}
             <div className="question-actions">
               <button
                 type="button"
@@ -547,7 +583,7 @@ export default function App() {
             )}
             {aiStatus === "error" && (
               <div className="summary-error">
-                <p>AI summary could not load right now.</p>
+                <p>{aiErrorMessage || "AI summary could not load right now."}</p>
                 <button
                   type="button"
                   className="btn ghost"
