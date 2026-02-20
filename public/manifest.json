@@ -1,0 +1,9 @@
+{
+  "short_name": "Valentine",
+  "name": "Valentine Questionnaire",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#FAD0D6",
+  "background_color": "#FAD0D6"
+}

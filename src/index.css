@@ -1,31 +1,44 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap");
+
+:root {
+  --pink: #fad0d6;
+  --blood: #850441;
+  --ink: #0b0b0b;
+  --paper: #fff6f7;
+  --muted: rgba(11, 11, 11, 0.6);
+  --font-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Poppins", sans-serif;
+  --font-accent: "Playfair Display", serif;
+  --mx: 50%;
+  --my: 50%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: Verdana;
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font-body);
+  background: var(--pink);
+  color: var(--ink);
 }
 
 #root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100vh;
 }
 
-h1 {
-  text-align: center;
-  font-size: 4rem;
+button,
+input,
+textarea {
+  font-family: inherit;
 }
 
-button {
-  font-size: 2rem;
-  min-width: 100px;
-  min-height: 100px;
-  margin: 10px;
-  border-radius: 10px;
-  transition: 200ms;
-}
-
-button:hover {
-  background: rgba(255, 255, 255, 0.6);
-}
-
-button:active {
-  background: rgba(0, 0, 0, 0.4);
+::selection {
+  background: rgba(133, 4, 65, 0.2);
 }

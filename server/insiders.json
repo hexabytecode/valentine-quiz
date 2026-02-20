@@ -1,0 +1,100 @@
+[
+  {
+    "id": "potty_jokes",
+    "raw": "cracking so many potty jokes on you",
+    "normalized": "the never-ending potty jokes",
+    "tags": ["tease", "silly"],
+    "intensity": "mild"
+  },
+  {
+    "id": "pounce",
+    "raw": "you pouncing on me makes my day",
+    "normalized": "when you pounce on me, it makes my day",
+    "tags": ["affection", "playful", "physical"],
+    "intensity": "mild"
+  },
+  {
+    "id": "chipped_lips",
+    "raw": "even though i love your chipped lips, please take care of yourself, i care for you",
+    "normalized": "your chipped lips are cute, but take care of yourself",
+    "tags": ["care", "affection"],
+    "intensity": "mild"
+  },
+  {
+    "id": "we_the_best",
+    "raw": "if you ever choose to ask me what are we, i'll confidently say we the best",
+    "normalized": "if you ask what we are, I'm saying we the best",
+    "tags": ["commitment", "banter"],
+    "intensity": "mild"
+  },
+  {
+    "id": "antisocial_night",
+    "raw": "antisocial was the most magical night i have lived in my life",
+    "normalized": "Antisocial was our most magical night",
+    "tags": ["memory", "shared"],
+    "intensity": "mild"
+  },
+  {
+    "id": "lips_shiver",
+    "raw": "i love when i make your lips shiver (dont ask which ones)",
+    "normalized": "I love making your lips shiver (don't ask which ones)",
+    "tags": ["flirty", "spicy"],
+    "intensity": "spicy"
+  },
+  {
+    "id": "bestie",
+    "raw": "you're my bestie who i sleep with",
+    "normalized": "you're my bestie I get to sleep with",
+    "tags": ["affection", "banter"],
+    "intensity": "mild"
+  },
+  {
+    "id": "empath",
+    "raw": "i am into empaths and you're obviously my type",
+    "normalized": "you're exactly my empath type",
+    "tags": ["compliment", "type"],
+    "intensity": "mild"
+  },
+  {
+    "id": "bite_marks",
+    "raw": "you're my #2 fav place to leave bite marks, first will be a shawarma from Marrakesh",
+    "normalized": "you're my #2 favorite place for bite marks, shawarma from Marrakesh is #1",
+    "tags": ["flirty", "spicy", "food"],
+    "intensity": "spicy"
+  },
+  {
+    "id": "thick_thin",
+    "raw": "i can't believe we survived through a lot of thick, thanks to you we created a lot of thin",
+    "normalized": "we got through a lot together and still came out lighter",
+    "tags": ["shared", "sensitive"],
+    "intensity": "mild"
+  },
+  {
+    "id": "dumb_eyes",
+    "raw": "you have the dumbest eyes i have ever seen, can they be mine?",
+    "normalized": "your dumb eyes are my favorite, can I keep them?",
+    "tags": ["tease", "affection"],
+    "intensity": "mild"
+  },
+  {
+    "id": "yapper_exception",
+    "raw": "yappers aren't my type, you're the only exception",
+    "normalized": "you're the only yapper I actually like",
+    "tags": ["tease", "banter"],
+    "intensity": "mild"
+  },
+  {
+    "id": "head_taplis",
+    "raw": "your head is the best (to give taplis)",
+    "normalized": "your head is the best for little taplis",
+    "tags": ["playful", "physical"],
+    "intensity": "mild"
+  },
+  {
+    "id": "company_banter",
+    "raw": "our company is the best company i work at, all employees are so nice and I bang this hot assistant/cofounder i have",
+    "normalized": "our company is the best and I'm definitely biased about my hot cofounder",
+    "tags": ["workplace", "spicy", "banter"],
+    "intensity": "spicy"
+  }
+]
