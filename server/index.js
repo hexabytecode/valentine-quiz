@@ -8,6 +8,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 5005;
+const OPENAI_TIMEOUT_MS = Number(process.env.OPENAI_TIMEOUT_MS || 90000);
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
   .split(",")
   .map((origin) => origin.trim())
@@ -167,14 +168,22 @@ app.post("/api/summarize", async (req, res) => {
   };
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -203,6 +212,12 @@ app.post("/api/summarize", async (req, res) => {
 
     return res.json(parsed);
   } catch (err) {
+    if (err?.name === "AbortError") {
+      return res.status(504).json({
+        error: "OpenAI request timed out",
+        timeoutMs: OPENAI_TIMEOUT_MS,
+      });
+    }
     return res.status(500).json({
       error: "Server error while calling OpenAI.",
       details: err?.message || String(err),

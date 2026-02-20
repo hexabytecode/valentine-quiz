@@ -91,6 +91,9 @@ const QUESTION_POOL = [
 
 const MAX_ANSWER_CHARS = 180;
 const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "").replace(/\/$/, "");
+const SUMMARY_TIMEOUT_MS = Number(
+  process.env.REACT_APP_SUMMARY_TIMEOUT_MS || 90000
+);
 
 const LOADING_MESSAGES = [
   "Gathering your words into trouble...",
@@ -238,10 +241,16 @@ export default function App() {
     lastRequestKeyRef.current = requestKey;
 
     const controller = new AbortController();
+    let timeoutId;
+    let didTimeout = false;
 
     const run = async () => {
       setAiStatus("loading");
       logEvent("ai_request_start", { nickname, questionCount: questionSet.length });
+      timeoutId = setTimeout(() => {
+        didTimeout = true;
+        controller.abort();
+      }, SUMMARY_TIMEOUT_MS);
       try {
         const response = await fetch(`${API_BASE_URL}/api/summarize`, {
           method: "POST",
@@ -269,18 +278,23 @@ export default function App() {
         setAiStatus("done");
         logEvent("ai_request_success", { length: data.roast_note?.length || 0 });
       } catch (err) {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted && !didTimeout) {
           setAiStatus("idle");
           return;
         }
         setAiStatus("error");
-        logEvent("ai_request_error", err?.message || "unknown");
+        logEvent("ai_request_error", didTimeout ? "timeout" : err?.message || "unknown");
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 
     run();
 
-    return () => controller.abort();
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [screen, answers, nickname, questionSet, aiSummary, retryToken, logEvent]);
 
   useEffect(() => {

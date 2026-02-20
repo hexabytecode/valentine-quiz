@@ -9,6 +9,7 @@ This project needs **both** a backend (Express) and a frontend (React).
 4. Environment variables:
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL=gpt-5-nano`
+   - `OPENAI_TIMEOUT_MS=90000` (optional, OpenAI request timeout)
    - `SERVER_PORT=5005` (optional)
    - `FRONTEND_ORIGIN=https://your-frontend-domain`
 
@@ -20,6 +21,7 @@ Render uses your build/start commands and exposes env vars to the service. ci
 3. Add environment variables:
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL=gpt-5-nano`
+   - `OPENAI_TIMEOUT_MS=90000` (optional, OpenAI request timeout)
    - `SERVER_PORT=5005` (optional)
    - `FRONTEND_ORIGIN=https://your-frontend-domain`
 
@@ -31,6 +33,7 @@ Railway lets you override start commands and set variables per service. cite�
 3. Output Directory: `build` (if you set it manually).
 4. Set environment variable:
    - `REACT_APP_API_BASE_URL=https://your-backend-domain`
+   - `REACT_APP_SUMMARY_TIMEOUT_MS=90000` (optional, frontend timeout)
 
 Vercel injects environment variables at build time. citeturn1search0turn1search1
 
@@ -40,6 +43,7 @@ Vercel injects environment variables at build time. citeturn1search0tur
 3. Publish Directory: `build`
 4. Environment variable:
    - `REACT_APP_API_BASE_URL=https://your-backend-domain`
+   - `REACT_APP_SUMMARY_TIMEOUT_MS=90000` (optional, frontend timeout)
 
 Netlify’s CRA defaults and `REACT_APP_` env var handling are documented here. citeturn0search1turn1search1
 
