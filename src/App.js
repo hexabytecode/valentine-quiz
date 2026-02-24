@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 
 const NAMES = ["GirlyPop", "TikuBadmash", "PottyMaster", "BabluBhai", "GubluBhai"];
@@ -299,19 +299,25 @@ export default function App() {
     };
   }, [gateOpen, gateStatus]);
 
-  const getNextEditableIndex = (start) => {
-    for (let i = start; i < gateLocked.length; i += 1) {
-      if (!gateLocked[i]) return i;
-    }
-    return gateLocked.length - 1;
-  };
+  const getNextEditableIndex = useCallback(
+    (start) => {
+      for (let i = start; i < gateLocked.length; i += 1) {
+        if (!gateLocked[i]) return i;
+      }
+      return gateLocked.length - 1;
+    },
+    [gateLocked]
+  );
 
-  const getPrevEditableIndex = (start) => {
-    for (let i = start; i >= 0; i -= 1) {
-      if (!gateLocked[i]) return i;
-    }
-    return 0;
-  };
+  const getPrevEditableIndex = useCallback(
+    (start) => {
+      for (let i = start; i >= 0; i -= 1) {
+        if (!gateLocked[i]) return i;
+      }
+      return 0;
+    },
+    [gateLocked]
+  );
 
   const handleGateInput = (index, value) => {
     if (gateStatus !== "input") return;
@@ -421,7 +427,7 @@ export default function App() {
         clearTimeout(clearTimer);
       };
     }
-  }, [gateOpen, gateStatus, gateOtp, gateLocked]);
+  }, [gateOpen, gateStatus, gateOtp, gateLocked, getNextEditableIndex]);
 
   const handleGateContinue = () => {
     if (typeof window !== "undefined") {
