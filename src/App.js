@@ -94,6 +94,9 @@ const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "").replace(/\/$/, "
 const SUMMARY_TIMEOUT_MS = Number(
   process.env.REACT_APP_SUMMARY_TIMEOUT_MS || 90000
 );
+const GATE_STORAGE_KEY = "valentine_gate_completed_at";
+const GATE_COOLDOWN_MS = 60 * 60 * 1000;
+const GATE_WORD = ["M", "O", "N", "E", "Y"];
 
 const LOADING_MESSAGES = [
   "Gathering your words into trouble...",
@@ -142,6 +145,18 @@ function renderBold(text) {
 }
 
 export default function App() {
+  const [gateOpen, setGateOpen] = useState(true);
+  const [gateStatus, setGateStatus] = useState("input");
+  const [gateTimeLeft, setGateTimeLeft] = useState(60);
+  const [gateOtp, setGateOtp] = useState(Array(5).fill(""));
+  const [gateLocked, setGateLocked] = useState(Array(5).fill(false));
+  const [gateError, setGateError] = useState("");
+  const [gateShake, setGateShake] = useState(false);
+  const [gateGuessedMouth, setGateGuessedMouth] = useState(false);
+  const [gateResetting, setGateResetting] = useState(false);
+  const gateRefs = useRef([]);
+  const gateRevealTimers = useRef([]);
+
   const [nameIndex, setNameIndex] = useState(0);
   const [screen, setScreen] = useState("intro");
   const [step, setStep] = useState(0);
@@ -179,6 +194,242 @@ export default function App() {
     },
     [debugEnabled]
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(GATE_STORAGE_KEY);
+    if (!stored) {
+      setGateOpen(true);
+      return;
+    }
+    const parsed = Number(stored);
+    if (!Number.isFinite(parsed)) {
+      setGateOpen(true);
+      return;
+    }
+    if (Date.now() - parsed < GATE_COOLDOWN_MS) {
+      setGateOpen(false);
+    } else {
+      setGateOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!gateOpen) return;
+    setGateStatus("input");
+    setGateTimeLeft(60);
+    setGateOtp(Array(5).fill(""));
+    setGateLocked(Array(5).fill(false));
+    setGateError("");
+    setGateShake(false);
+    setGateResetting(false);
+    setGateGuessedMouth(false);
+    gateRevealTimers.current.forEach((timer) => clearTimeout(timer));
+    gateRevealTimers.current = [];
+    requestAnimationFrame(() => {
+      gateRefs.current[0]?.focus();
+    });
+  }, [gateOpen]);
+
+  useEffect(() => {
+    if (!gateOpen || gateStatus !== "input") return;
+    const timer = setInterval(() => {
+      setGateTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [gateOpen, gateStatus]);
+
+  useEffect(() => {
+    if (!gateOpen || gateStatus !== "input") return;
+    if (gateTimeLeft === 40) {
+      setGateOtp((prev) => {
+        const next = [...prev];
+        next[1] = "O";
+        return next;
+      });
+      setGateLocked((prev) => {
+        const next = [...prev];
+        next[1] = true;
+        return next;
+      });
+    }
+    if (gateTimeLeft === 20) {
+      setGateOtp((prev) => {
+        const next = [...prev];
+        next[0] = "M";
+        return next;
+      });
+      setGateLocked((prev) => {
+        const next = [...prev];
+        next[0] = true;
+        return next;
+      });
+    }
+    if (gateTimeLeft === 0) {
+      setGateStatus("revealing");
+    }
+  }, [gateOpen, gateStatus, gateTimeLeft]);
+
+  useEffect(() => {
+    if (!gateOpen || gateStatus !== "revealing") return;
+    setGateOtp(Array(5).fill(""));
+    setGateLocked(Array(5).fill(true));
+    gateRevealTimers.current.forEach((timer) => clearTimeout(timer));
+    gateRevealTimers.current = GATE_WORD.map((letter, index) =>
+      setTimeout(() => {
+        setGateOtp((prev) => {
+          const next = [...prev];
+          next[index] = letter;
+          return next;
+        });
+        if (index === GATE_WORD.length - 1) {
+          setGateStatus("revealed");
+        }
+      }, index * 220)
+    );
+    return () => {
+      gateRevealTimers.current.forEach((timer) => clearTimeout(timer));
+      gateRevealTimers.current = [];
+    };
+  }, [gateOpen, gateStatus]);
+
+  const getNextEditableIndex = (start) => {
+    for (let i = start; i < gateLocked.length; i += 1) {
+      if (!gateLocked[i]) return i;
+    }
+    return gateLocked.length - 1;
+  };
+
+  const getPrevEditableIndex = (start) => {
+    for (let i = start; i >= 0; i -= 1) {
+      if (!gateLocked[i]) return i;
+    }
+    return 0;
+  };
+
+  const handleGateInput = (index, value) => {
+    if (gateStatus !== "input") return;
+    setGateError("");
+    if (gateLocked[index]) {
+      const nextIndex = getNextEditableIndex(index + 1);
+      gateRefs.current[nextIndex]?.focus();
+      return;
+    }
+    const letter = value.replace(/[^a-zA-Z]/g, "").toUpperCase();
+    if (!letter) {
+      setGateOtp((prev) => {
+        const next = [...prev];
+        next[index] = "";
+        return next;
+      });
+      return;
+    }
+    setGateOtp((prev) => {
+      const next = [...prev];
+      next[index] = letter[0];
+      return next;
+    });
+    const nextIndex = getNextEditableIndex(index + 1);
+    gateRefs.current[nextIndex]?.focus();
+  };
+
+  const handleGateKeyDown = (index, event) => {
+    if (gateStatus !== "input") return;
+    if (event.key === "Backspace") {
+      setGateError("");
+      if (gateLocked[index]) {
+        const prevIndex = getPrevEditableIndex(index - 1);
+        gateRefs.current[prevIndex]?.focus();
+        return;
+      }
+      if (gateOtp[index]) {
+        setGateOtp((prev) => {
+          const next = [...prev];
+          next[index] = "";
+          return next;
+        });
+      } else if (index > 0) {
+        const prevIndex = getPrevEditableIndex(index - 1);
+        gateRefs.current[prevIndex]?.focus();
+        setGateOtp((prev) => {
+          const next = [...prev];
+          if (!gateLocked[prevIndex]) {
+            next[prevIndex] = "";
+          }
+          return next;
+        });
+      }
+    }
+  };
+
+  const handleGatePaste = (event, startIndex) => {
+    if (gateStatus !== "input") return;
+    setGateError("");
+    const text = event.clipboardData.getData("text").replace(/[^a-zA-Z]/g, "").toUpperCase();
+    if (!text) return;
+    event.preventDefault();
+    const editableIndexes = [];
+    for (let i = startIndex; i < 5; i += 1) {
+      if (!gateLocked[i]) editableIndexes.push(i);
+    }
+    const letters = text.slice(0, editableIndexes.length).split("");
+    setGateOtp((prev) => {
+      const next = [...prev];
+      letters.forEach((char, idx) => {
+        next[editableIndexes[idx]] = char;
+      });
+      return next;
+    });
+    const nextIndex =
+      editableIndexes[letters.length - 1] !== undefined
+        ? Math.min(editableIndexes[letters.length - 1] + 1, 4)
+        : startIndex;
+    gateRefs.current[getNextEditableIndex(nextIndex)]?.focus();
+  };
+
+  useEffect(() => {
+    if (!gateOpen || gateStatus !== "input") return;
+    if (gateOtp.every((char) => char)) {
+      const attempt = gateOtp.join("");
+      if (attempt === "MOUTH") {
+        setGateGuessedMouth(true);
+      }
+      setGateError("Not quite. Try again. 😔");
+      setGateShake(true);
+      setGateResetting(false);
+      const fadeTimer = setTimeout(() => {
+        setGateResetting(true);
+      }, 1000);
+      const clearTimer = setTimeout(() => {
+        clearTimeout(fadeTimer);
+        setGateShake(false);
+        setGateError("");
+        setGateOtp((prev) =>
+          prev.map((char, idx) => (gateLocked[idx] ? char : ""))
+        );
+        setGateResetting(false);
+        gateRefs.current[getNextEditableIndex(0)]?.focus();
+      }, 1500);
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [gateOpen, gateStatus, gateOtp, gateLocked]);
+
+  const handleGateContinue = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(GATE_STORAGE_KEY, String(Date.now()));
+    }
+    setGateOpen(false);
+  };
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -441,6 +692,86 @@ export default function App() {
 
   return (
     <div className="app" ref={appRef}>
+      {gateOpen && (
+        <div className="gate-overlay" role="dialog" aria-modal="true">
+          <div className="gate-card">
+            <p className="gate-eyebrow">A quick gate</p>
+            <h2 className="gate-title">Unlock your valentine website</h2>
+            <p className="gate-question">I love how you use your</p>
+            <div
+              className={`gate-otp ${gateShake ? "gate-otp--shake" : ""} ${
+                gateResetting ? "gate-otp--reset" : ""
+              }`}
+              aria-label="5 letter word input"
+            >
+              {gateOtp.map((value, index) => (
+                <input
+                  key={`gate-${index}`}
+                  ref={(el) => {
+                    gateRefs.current[index] = el;
+                  }}
+                  className={`gate-box ${
+                    gateStatus !== "input" ? "gate-box--revealed" : ""
+                  } ${gateLocked[index] ? "gate-box--locked" : ""}`}
+                  type="text"
+                  inputMode="text"
+                  autoComplete="off"
+                  maxLength={1}
+                  value={value}
+                  onChange={(event) => handleGateInput(index, event.target.value)}
+                  onKeyDown={(event) => handleGateKeyDown(index, event)}
+                  onPaste={(event) => handleGatePaste(event, index)}
+                  disabled={gateStatus !== "input" || gateLocked[index]}
+                  aria-label="5 letter word input"
+                />
+              ))}
+            </div>
+            <div className="gate-hint">
+              {gateError && (
+                <span
+                  className={`gate-error-inline ${
+                    gateResetting ? "gate-error-inline--fade" : ""
+                  }`}
+                >
+                  {gateError}
+                </span>
+              )}
+              {gateError && <span className="gate-dot">•</span>}
+              <span className="gate-timer">
+                {String(Math.floor(gateTimeLeft / 60)).padStart(2, "0")}:
+                {String(gateTimeLeft % 60).padStart(2, "0")}
+              </span>
+            </div>
+            {gateStatus === "revealed" && (
+              <div className="gate-reveal">
+                <p className="gate-reveal-primary">
+                  {gateGuessedMouth
+                    ? (
+                      <>
+                        your mind went somewhere else, huh? good girl.{" "}
+                        <span className="gate-emoji">😏</span>
+                      </>
+                    )
+                    : (
+                      <>
+                        someone has been behaving too nice. let me make a bad student out of her{" "}
+                        <span className="gate-emoji">😈</span>
+                      </>
+                    )}
+                </p>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={handleGateContinue}
+                >
+                  continue
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="backdrop" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
       <div className="floaters" aria-hidden="true">
@@ -484,8 +815,12 @@ export default function App() {
               For <span key={currentName} className="name-swap">{currentName}</span>
             </p>
             <p className="subtitle">
-              Valentine’s is on 14/02 for kids. Grown‑ups celebrate it on a
-              delay.{" "}
+              <span className="subtitle-line">
+                Valentine’s is on 14/02 for kids.
+              </span>
+              <span className="subtitle-line">
+                Grown‑ups celebrate it with a delay.
+              </span>
               <span className="subtitle-aside">
                 (is something people say when they're late @ gift giving)
               </span>

@@ -77,6 +77,152 @@
   padding: clamp(24px, 6vw, 72px);
 }
 
+.gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(250, 208, 214, 0.7);
+  backdrop-filter: blur(18px);
+  display: grid;
+  place-items: center;
+  z-index: 30;
+  padding: clamp(20px, 4vw, 36px);
+}
+
+.gate-card {
+  width: min(560px, 100%);
+  background: rgba(255, 246, 247, 0.92);
+  border: 1px solid rgba(11, 11, 11, 0.15);
+  box-shadow: 0 30px 60px rgba(11, 11, 11, 0.18);
+  padding: clamp(20px, 4vw, 32px);
+  display: grid;
+  gap: 12px;
+  text-align: center;
+}
+
+.gate-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-family: var(--font-heading);
+}
+
+.gate-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(1.4rem, 3vw, 2.1rem);
+}
+
+.gate-question {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.gate-otp {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(42px, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.gate-otp--shake {
+  animation: gateShake 0.3s ease;
+}
+
+.gate-otp--reset {
+  animation: gateReset 0.4s ease;
+}
+
+.gate-box {
+  height: 54px;
+  border: 1px solid rgba(11, 11, 11, 0.25);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  text-align: center;
+  font-family: var(--font-heading);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.gate-box:focus {
+  outline: none;
+  border-color: rgba(133, 4, 65, 0.6);
+  box-shadow: 0 0 0 3px rgba(133, 4, 65, 0.15);
+}
+
+.gate-box--revealed {
+  background: rgba(133, 4, 65, 0.12);
+  border-color: rgba(133, 4, 65, 0.5);
+  color: var(--blood);
+}
+
+.gate-box--locked {
+  background: rgba(133, 4, 65, 0.08);
+  border-color: rgba(133, 4, 65, 0.35);
+  color: var(--blood);
+}
+
+.gate-hint {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.gate-timer {
+  letter-spacing: 0.08em;
+  font-family: var(--font-heading);
+}
+
+.gate-error-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--blood);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.gate-error-inline--fade {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.gate-dot {
+  color: var(--blood);
+  font-size: 0.9rem;
+}
+
+.gate-reveal {
+  display: grid;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.gate-reveal-primary {
+  margin: 0;
+  font-family: var(--font-heading);
+  color: var(--blood);
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.gate-emoji {
+  font-style: normal;
+}
+
 .hero-content,
 .question-card,
 .summary-card {
@@ -166,10 +312,16 @@
   color: var(--muted);
 }
 
+.subtitle-line {
+  display: block;
+}
+
 .subtitle-aside {
   font-size: 0.85em;
   opacity: 0.7;
   vertical-align: top;
+  display: block;
+  margin-top: 4px;
 }
 
 .cta-row {
@@ -651,6 +803,42 @@ textarea:focus {
   }
 }
 
+@keyframes gateShake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes gateReset {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes pulse {
   0% {
     transform: scale(1);
@@ -757,6 +945,29 @@ textarea:focus {
 
   textarea {
     min-height: 110px;
+  }
+
+  .gate-card {
+    padding: 18px;
+    gap: 10px;
+  }
+
+  .gate-otp {
+    grid-template-columns: repeat(5, minmax(36px, 1fr));
+    gap: 8px;
+  }
+
+  .gate-box {
+    height: 46px;
+    font-size: 1rem;
+  }
+
+  .gate-hint {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    letter-spacing: 0.18em;
   }
 }
 
