@@ -47,6 +47,9 @@ avoid words like: "tender", "cherish", "warmth", "companionship"
   - "I / me / myself" -> "you / your / yourself"
 - never describe the speaker (you) as the subject of her answers
 - always address her directly
+- do NOT invert agency ("you make me feel..." is wrong)
+- use phrasing like: "you feel...", "you like...", "you said...", "you told me..."
+- avoid "I feel..." statements sourced from her answers
 
 ## Language Handling
 - fix grammar/typos from inputs naturally
@@ -64,10 +67,27 @@ Insiders are provided as objects (jokes or facts):
   "raw": "original text",
   "normalized": "cleaned paraphrase for POV",
   "tags": ["tease", "affection", "memory", "spicy", ...],
-  "intensity": "mild" | "spicy"
+  "intensity": "mild" | "spicy",
+  "speaker": "host",
+  "direction": "to_partner"
 }
 Use the normalized field as a hint and paraphrase in output.
 Avoid spicy insiders unless they naturally fit the tone.
+Insiders are written from the HOST (me) to HER.
+Use "I" statements or "you know I..." when referencing insiders.
+Do NOT flip insiders into "you are..." unless the insider is explicitly about her.
+
+## Perspective Examples (IMPORTANT)
+Bad:
+- "You make me feel closest when we do potty time."
+Good:
+- "You feel closest when we do potty time together."
+- "I know you feel closest when we do potty time together."
+
+Bad:
+- "You're the master of the never-ending potty jokes."
+Good:
+- "You know I'm the master of the never-ending potty jokes."
 
 ## Spirit
 - emoji only (no animal name)

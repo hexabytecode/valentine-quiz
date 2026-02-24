@@ -57,6 +57,8 @@ const normalizeInsiders = (insiders) => {
     normalized: item.normalized || normalizeAnswer(item.raw || ""),
     tags: Array.isArray(item.tags) ? item.tags : [],
     intensity: item.intensity || "mild",
+    speaker: item.speaker || "host",
+    direction: item.direction || "to_partner",
   }));
 };
 
@@ -89,11 +91,16 @@ app.post("/api/summarize", async (req, res) => {
   }
 
   const payload = questions
-    .map((item) => ({
-      question: item.prompt,
-      answer_raw: String(answers[item.id] || "").trim(),
-      answer_normalized: normalizeAnswer(answers[item.id] || ""),
-    }))
+    .map((item) => {
+      const rawAnswer = String(answers[item.id] || "").trim();
+      const normalized = normalizeAnswer(rawAnswer);
+      return {
+        question: item.prompt,
+        answer_raw: rawAnswer,
+        answer_normalized: normalized,
+        answer_pov: normalized ? `She says ${normalized}` : "",
+      };
+    })
     .filter((item) => item.answer_raw.length > 0);
 
   if (!payload.length) {
@@ -113,7 +120,8 @@ app.post("/api/summarize", async (req, res) => {
       "Use normalized text to help with POV, and paraphrase in the output.",
       "Avoid spicy insiders unless they naturally fit the tone.",
       "",
-      "Use answer_normalized as the source of truth for pronouns and POV.",
+      "Use answer_pov as the source of truth for POV (HER voice).",
+      "Never invert agency (avoid 'you make me feel' for her answers).",
       "Fix minor grammar/typos from the input naturally.",
       "Return JSON that matches the schema.",
       "",

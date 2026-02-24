@@ -6,85 +6,80 @@ const NAMES = ["GirlyPop", "TikuBadmash", "PottyMaster", "BabluBhai", "GubluBhai
 const QUESTION_POOL = [
   {
     id: "q1",
-    prompt:
-      "What's the quickest activity with an \"ahh, I'm comfy\" vibe for you?",
-    placeholder: "A vibe, a feeling, a tiny detail...",
+    prompt: "When do you feel most “us” with me?",
+    placeholder: "A moment, a vibe, a tiny detail...",
   },
   {
     id: "q2",
-    prompt: "What's something people often get wrong about you at first?",
-    placeholder: "Something they misunderstand...",
+    prompt: "What’s one tiny thing I do that makes you feel loved?",
+    placeholder: "A little thing that lands big...",
   },
   {
     id: "q3",
-    prompt: "What's a random memory that still makes you smile for no reason?",
-    placeholder: "A small moment that lives in your head...",
+    prompt: "When you’re having a rough day, how can I be softer with you?",
+    placeholder: "The kind of care that helps...",
   },
   {
     id: "q4",
-    prompt: "What's your tiny 'reset' ritual when you've had a bad day?",
-    placeholder: "A tiny habit that helps you feel okay again...",
+    prompt: "What’s a simple little ritual you want us to do more?",
+    placeholder: "A sweet habit for us...",
   },
   {
     id: "q5",
+    prompt:
+      "What kind of affection from me lands the deepest?",
+    placeholder: "The kind that actually sticks...",
+  },
+  {
+    id: "q6",
+    prompt: "What’s a memory of us that still makes you smile?",
+    placeholder: "A moment we’ll keep...",
+  },
+  {
+    id: "q7",
+    prompt: "What’s something you wish I’d ask you more often?",
+    placeholder: "A part of you I should ask about...",
+  },
+  {
+    id: "q8",
+    prompt: "What makes you feel safest with me?",
+    placeholder: "The signal that feels safe...",
+  },
+  {
+    id: "q9",
+    prompt: "What’s one thing you want me to understand about your heart?",
+    placeholder: "What you want me to get...",
+  },
+  {
+    id: "q10",
+    prompt: "What’s the easiest way for us to reset after a bad day?",
+    placeholder: "Our reset button...",
+  },
+  {
+    id: "q11",
+    prompt: "What’s a compliment from me that actually sticks with you?",
+    placeholder: "The kind that stays with you...",
+  },
+  {
+    id: "q12",
     prompt:
       "If we disappeared for a day - no phones, no responsibilities - what would our day look like?",
     placeholder: "Paint the day for me...",
   },
   {
-    id: "q6",
-    prompt:
-      "What kind of compliments actually hit you emotionally, not just sound nice?",
-    placeholder: "The kind that stay with you...",
-  },
-  {
-    id: "q7",
-    prompt:
-      "When do you feel most confident and 'glowing', not just physically but as a person?",
-    placeholder: "A moment when you feel fully you...",
-  },
-  {
-    id: "q8",
-    prompt: "What makes you feel safe enough to really trust someone?",
-    placeholder: "The signal that feels safe...",
-  },
-  {
-    id: "q9",
-    prompt: "What's something you wish people were more curious to ask you about?",
-    placeholder: "A part of you that deserves attention...",
-  },
-  {
-    id: "q10",
-    prompt: "What's one experience you'd love for us to create together someday?",
-    placeholder: "A memory we'd create together...",
-  },
-  {
-    id: "q11",
-    prompt:
-      "Is there a fear you don't usually say out loud but it's quietly there?",
-    placeholder: "Only if you want to share...",
-  },
-  {
-    id: "q12",
-    prompt: "When do you feel closest to me?",
-    placeholder: "A moment, a feeling, a habit...",
-  },
-  {
     id: "q13",
-    prompt:
-      "What's one thing you'd always want your partner to truly understand about you?",
-    placeholder: "What you want to be understood for...",
+    prompt: "When do you feel most confident with me beside you?",
+    placeholder: "A moment you feel fully you...",
   },
   {
     id: "q14",
-    prompt:
-      "Be honest - is there something I do that you appreciate but haven't told me yet?",
-    placeholder: "Something you notice...",
+    prompt: "What’s a tiny “me + you” moment you want more of?",
+    placeholder: "A little thing you want more of...",
   },
   {
     id: "q15",
     prompt:
-      "Fast forward 10 years - what does a lazy Sunday together look like for us?",
+      "Ten years from now, what does our lazy Sunday look like?",
     placeholder: "A future Sunday, soft and slow...",
   },
 ];
@@ -107,7 +102,7 @@ const LOADING_MESSAGES = [
   "Final touches. Don't go anywhere.",
 ];
 
-const pickRandomQuestions = (count = 3) => {
+const pickRandomQuestions = (count = 5) => {
   const copy = [...QUESTION_POOL];
   for (let i = copy.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -406,6 +401,10 @@ export default function App() {
       if (attempt === "MOUTH") {
         setGateGuessedMouth(true);
       }
+      if (attempt === GATE_WORD.join("")) {
+        setGateStatus("revealing");
+        return;
+      }
       setGateError("Not quite. Try again. 😔");
       setGateShake(true);
       setGateResetting(false);
@@ -604,7 +603,7 @@ export default function App() {
     setAiFooter("");
     setAiStatus("idle");
     setAiErrorMessage("");
-    setQuestionSet(pickRandomQuestions());
+    setQuestionSet(pickRandomQuestions(5));
     setAnswers({});
     setScreen("question");
     setStep(0);
@@ -661,7 +660,7 @@ export default function App() {
     setAiStatus("idle");
     setAiErrorMessage("");
     lastRequestKeyRef.current = null;
-    setQuestionSet(pickRandomQuestions());
+    setQuestionSet(pickRandomQuestions(5));
     setScreen("intro");
     logEvent("restart");
   };
@@ -888,18 +887,18 @@ export default function App() {
             <div className="question-actions">
               <button
                 type="button"
-                className="btn ghost"
-                onClick={handleBack}
-              >
-                Back
-              </button>
-              <button
-                type="button"
                 className="btn primary"
                 onClick={handleNext}
                 disabled={!canContinue}
               >
                 {step === questionSet.length - 1 ? "Finish" : "Next"}
+              </button>
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={handleBack}
+              >
+                Back
               </button>
             </div>
           </div>
@@ -962,17 +961,10 @@ export default function App() {
             <div className="question-actions">
               <button
                 type="button"
-                className="btn ghost"
-                onClick={handleRestart}
-              >
-                Retake
-              </button>
-              <button
-                type="button"
                 className="btn primary"
                 onClick={handleRestart}
               >
-                Back to start
+                Retake
               </button>
             </div>
           </div>
