@@ -828,7 +828,7 @@ export default function App() {
                 Grown‑ups celebrate it with a delay.
               </span>
               <span className="subtitle-aside">
-                (is something people say when they're late @ gift giving)
+                (when you’re late with a gift)
               </span>
             </p>
             <div className="cta-row">
